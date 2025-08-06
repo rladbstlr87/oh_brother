@@ -1,0 +1,20 @@
+[project]
+name = "oh-brother"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.13.4",
+    "celery>=5.5.3",
+    "django>=5.2.5",
+    "djangorestframework>=3.16.1",
+    "pillow>=11.3.0",
+    "psycopg2-binary>=2.9.10",
+    "pyhwp>=0.1b15",
+    "pypdf2>=3.0.1",
+    "pytesseract>=0.3.13",
+    "python-docx>=1.2.0",
+    "redis>=6.3.0",
+    "selenium>=4.34.2",
+]
