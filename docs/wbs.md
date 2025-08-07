@@ -1,9 +1,4 @@
-### WBS (Work Breakdown Structure)
-
-- 프로젝트의 모든 작업을 단계별, 기능별로 분류한 목록입니다.
-- 각 항목의 예상 소요 기간을 산정하고 진행 상황을 체크하는 용도로 활용할 수 있습니다.
-
----
+## WBS (Work Breakdown Structure)
 
 ### 1.0 기획 및 설정 (Planning & Setup)
 - 예상 기간: 2025.08.06 ~ 2025.08.11
