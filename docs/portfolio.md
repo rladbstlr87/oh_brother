@@ -49,6 +49,7 @@
     - `PyPDF2`, `python-docx`, `pyhwp`: 문서 파일 파싱
     - `Pillow`, `Tesseract OCR`: 이미지 내 텍스트 추출
 - Frontend (유지보수):
+    - `FullCalendar`: 캘린더 UI 구현
     - `Vue.js`: 기존 백오피스 코드 이해 및 유지보수
 
 ---

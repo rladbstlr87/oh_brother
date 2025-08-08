@@ -51,3 +51,4 @@
 - Database: MySQL
 - Infrastructure: AWS (EC2, S3, RDS) 또는 Termux/Linux 기반 서버
 - Libraries: Celery, BeautifulSoup, Selenium, PyPDF2, Tesseract OCR 등
+- Frontend: FullCalendar

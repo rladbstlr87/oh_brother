@@ -136,6 +136,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.example
 .venv
 env/
 venv/
@@ -431,3 +432,5 @@ pyrightconfig.json
 tmp/
 temp/
 TIL/
+parsers/
+events/
