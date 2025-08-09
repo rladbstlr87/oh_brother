@@ -431,6 +431,5 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/django,python,linux,macos,pycharm
 tmp/
 temp/
-TIL/
 parsers/
 events/
