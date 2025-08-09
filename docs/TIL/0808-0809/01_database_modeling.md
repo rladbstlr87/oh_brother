@@ -1,4 +1,4 @@
-# 데이터베이스 모델링 (Database Modeling)
+# 데이터베이스 모델링
 
 ## 1. Django ORM을 이용한 모델 설계
 
@@ -10,7 +10,7 @@
 - `models.ManyToManyField`: N:M (다대다) 관계 정의. (예: 하나의 강사가 여러 행사에 참여)
 - `models.CharField`, `models.TextField`, `models.DateTimeField`: 데이터의 종류와 제약조건을 정의하는 필드 타입
 
-### For example (모델 설계를 통해 할 수 있는 것)
+### For example
 
 #### ex.1-1: 데이터의 무결성 및 일관성 확보
 - `Event` 모델이 `Church` 모델을 `ForeignKey`로 참조하게 함으로써, 존재하지 않는 교회가 행사를 주최하는 상황을 원천적으로 방지
@@ -29,7 +29,7 @@
   events = speaker.event_set.all()
   ```
 
-### What it can do? (더 복잡한 활용)
+### What it can do?
 
 #### ex.level.2: 체계적인 정보 제공 API 개발
 - 잘 구조화된 모델은 REST API의 엔드포인트를 설계하는 기반이 됨
