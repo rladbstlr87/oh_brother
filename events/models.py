@@ -1,15 +1,21 @@
+import os
 from django.db import models
 
 class SourceDocument(models.Model):
-    # 오리지널 파일 없을 수도 있음
+    # 원본 파일 부재 가능
     original_file = models.FileField(upload_to='source_documents/', blank=True, null=True, verbose_name="원본 파일")
     webp_file = models.ImageField(upload_to='webp_documents/', blank=True, null=True, verbose_name="WebP 변환 파일")
     extracted_text = models.TextField(blank=True, verbose_name="추출된 텍스트")
+    unique_identifier = models.CharField(max_length=255, unique=True, blank=True, null=True, verbose_name="고유 식별자")
     status = models.CharField(max_length=10, default='대기', verbose_name="처리 상태")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
 
     def __str__(self):
-        return self.original_file.name
+        if self.original_file and self.original_file.name:
+            return os.path.basename(self.original_file.name)
+        if self.unique_identifier:
+            return self.unique_identifier
+        return f"Source Document {self.id}"
 
 class Church(models.Model):
     name = models.CharField(max_length=150, unique=True, verbose_name="교회/단체명")
