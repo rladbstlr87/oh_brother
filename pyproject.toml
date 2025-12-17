@@ -8,6 +8,7 @@ dependencies = [
     "beautifulsoup4>=4.13.4",
     "celery>=5.5.3",
     "django>=5.2.5",
+    "django-cors-headers>=4.9.0",
     "djangorestframework>=3.16.1",
     "pdf2image>=1.17.0",
     "pdfplumber>=0.11.7",
