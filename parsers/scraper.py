@@ -27,6 +27,7 @@ class BandScraper:
         self.cookie_header = os.getenv("BAND_COOKIE_HEADER")
         self.auth_cookie_header = os.getenv("BAND_AUTH_COOKIE_HEADER")
         self.allow_manual_captcha = os.getenv("BAND_ALLOW_MANUAL_CAPTCHA", "false").lower() == "true"
+        self.allow_manual_login = os.getenv("BAND_ALLOW_MANUAL_LOGIN", "false").lower() == "true"
         self.scroll_count = scroll_count
         self.wait_seconds = wait_seconds
 
@@ -62,6 +63,10 @@ class BandScraper:
                 return
             # 쿠키만 있고 계정 정보가 없으면 더 진행 불가
             if not self.naver_id or not self.naver_password:
+                if self.allow_manual_login:
+                    self._wait_for_manual_login("쿠키 로그인에 실패했습니다. 브라우저에서 직접 로그인 후 Enter를 누르세요.")
+                    if not self._is_login_page():
+                        return
                 raise RuntimeError("쿠키 로그인에 실패했고 계정 정보가 없어 진행할 수 없습니다.")
 
         # 밴드 공식 로그인 페이지에 next_url로 바로 진입
@@ -109,9 +114,21 @@ class BandScraper:
                 print(
                     "캡차가 표시되었습니다. 브라우저(HEADLESS=false)에서 직접 풀이 후 Enter 키를 누르면 계속 진행합니다."
                 )
-                input("캡차 풀이가 끝나면 Enter를 누르세요...")
+                wait_seconds = int(os.getenv("BAND_MANUAL_CAPTCHA_WAIT", "120"))
+                try:
+                    input("캡차 풀이가 끝나면 Enter를 누르세요...")
+                except EOFError:
+                    # 터미널 입력이 막힌 경우 일정 시간 대기 후 진행
+                    print(f"입력을 받을 수 없어 {wait_seconds}초 동안 대기합니다...")
+                    time.sleep(wait_seconds)
             else:
                 raise RuntimeError("네이버 로그인에 캡차가 표시되어 자동 로그인이 차단되었습니다.")
+
+        # 자동 로그인 이후에도 로그인 페이지라면 수동 로그인 기회 제공
+        if self._is_login_page() and self.allow_manual_login:
+            self._wait_for_manual_login("자동 로그인 실패. 브라우저에서 직접 로그인 후 Enter를 누르세요.")
+            if self._is_login_page():
+                raise RuntimeError("수동 로그인 후에도 로그인 페이지입니다. 자격 증명 또는 쿠키를 확인하세요.")
 
     def _apply_cookie_header(self, cookie_header: str, base_url: str):
         # 드라이버에 쿠키를 추가하려면 먼저 해당 도메인으로 진입해야 함
@@ -154,6 +171,15 @@ class BandScraper:
         title = (self.driver.title or "").lower()
         return ("auth.band.us/login" in url) or ("로그인" in title) or ("login" in url)
 
+    def _wait_for_manual_login(self, message: str):
+        wait_seconds = int(os.getenv("BAND_MANUAL_LOGIN_WAIT", os.getenv("BAND_MANUAL_CAPTCHA_WAIT", "120")))
+        print(message)
+        try:
+            input("로그인이 끝나면 Enter를 누르세요...")
+        except EOFError:
+            print(f"입력을 받을 수 없어 {wait_seconds}초 동안 대기합니다...")
+            time.sleep(wait_seconds)
+
     def get_posts_with_details(self) -> List[dict]:
         self.driver.get(self.band_url)
         try:
@@ -173,12 +199,21 @@ class BandScraper:
         posts = soup.select("div.postWrap article")
 
         results = []
+        seen_keys = set()
         for post in posts:
             post_text = self._extract_post_text(post)
             attachment_urls = self._extract_attachments(post)
             timestamp = self._extract_timestamp(post)
 
             if post_text or attachment_urls or timestamp:
+                key = (
+                    timestamp or "",
+                    post_text[:80] if post_text else "",
+                    tuple(sorted(attachment_urls)),
+                )
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
                 results.append(
                     {
                         "text": post_text,
@@ -229,3 +264,31 @@ class BandScraper:
 
     def close(self):
         self.driver.quit()
+
+
+if __name__ == "__main__":
+    """
+    디버그 실행용 엔트리포인트.
+    - .env를 로드해 BAND_URL 등 설정을 사용
+    - 캡차가 뜨면 환경 변수에 따라 수동 입력/대기 처리
+    """
+    scraper = None
+    try:
+        scraper = BandScraper()
+        print("[scraper] 로그인 시도...")
+        scraper.login()
+        print("[scraper] 로그인 완료, 게시글 수집 시작...")
+        posts = scraper.get_posts_with_details()
+        print(f"[scraper] 게시글 {len(posts)}개 수집됨")
+        if posts:
+            for i, post in enumerate(posts[:3], 1):
+                print(f"  #{i} text={post.get('text')[:50]!r} attachments={len(post.get('attachment_urls', []))} timestamp={post.get('timestamp')}")
+    except Exception as e:
+        print(f"[scraper] 오류: {e}")
+        import traceback
+
+        traceback.print_exc()
+    finally:
+        if scraper:
+            scraper.close()
+            print("[scraper] 드라이버 종료")
